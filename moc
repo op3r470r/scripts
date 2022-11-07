@@ -1,0 +1,5 @@
+#! /bin/bash
+
+HISTFILE=~/.bash_history # your bash history file lives
+set -o history           # enable histroy
+history | awk '{print $2}' | sort | uniq -c | sort -rn | head
