@@ -1,0 +1,62 @@
+#! /bin/bash
+
+usage() {
+    cat <<EOF
+Usage: todo [-h] [-e] [-d n] <text>
+
+A simple todo management script.
+
+todo                 Print TODO.txt
+todo -h|--help       Print this help and exit
+todo -e|--edit       Edit Todo.txt directly
+todo -d|--delete n   Delete the <n>th entry
+todo <text>          Add <text> to bottom of todo.txt
+
+EOF
+    exit
+}
+
+TODO_FILE="$HOME/TODO.txt"
+TODO_EDITOR="emacs"
+
+check_todofile() {
+    if [[ ! -e "$TODO_FILE" ]]; then
+        echo "Creating $TODO_FILE"
+        if ! touch "$TODO_FILE"; then
+            echo "Couldn't create $TODO_FILE. Quitting"
+            exit
+        fi
+    fi
+}
+
+print_todolist() {
+    check_todofile
+    if [[ "$(wc -l < "$TODO_FILE")" -eq 0 ]]; then
+        echo "Your todo list is empty!"
+    else
+        cat -n "$TODO_FILE"
+    fi
+}
+
+case "$#" in
+    0) print_todolist ;;
+    1)
+        case "$1" in
+            -h | --help) usage;;
+            -e | --edit) check_todofile
+                         "$TODO_EDITOR" "$TODO_FILE";;
+            *) echo "$1" >> "$TODO_FILE"
+               print_todolist;;
+        esac
+        ;;
+    2)
+        case "$1" in
+            -d | --delete) sed -i "" "$2d" "$TODO_FILE"
+                           print_todolist;;
+            *) echo "$*" >> "$TODO_FILE"
+               print_todolist;;
+        esac
+        ;;
+    *) echo "$*" >> "$TODO_FILE"
+       print_todolist;;
+esac
